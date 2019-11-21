@@ -1,0 +1,94 @@
+---
+title: "Stat_Inference_CourseProj"
+Date: November 2019
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+Course: Statistical Inference
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+```
+<font size="5">Part 1</font>
+
+```{r}
+set.seed(10)
+nosim <- 1000
+simu<-rexp(nosim*40, 0.2)   # generate simulation 1000x40 values 
+values<-matrix(simu, nosim) # put these values in matrix 1000 rows by 40 columns
+means<-apply(values, 1, mean) # apply mean to each row (1 for row)
+
+Smean<-mean(means) # sample mean
+Svar<-var(means)   # sample variance
+
+#Exponential Distribution, rexp(n,lambda) with lambda=0.2
+#Theoretical mean = 1/lambda=1/0.2 = 5
+#Theoretical standard deviation = 1/lambda = 1/0.2=5
+#Theoretical variance = sd^2=5^2=25
+```
+
+Question#1: Sample mean = `r Smean`, and theoretical mean=5
+
+
+Question#2: Sample variance=`r Svar`, and theoretical variance=25
+
+As Central Limit Theorem states giving a distribution with a mean of mu and variance of sigma^2, the sampling distriubtion of the mean approaches a normal distribution with a mean (mu) and a variance sigma^2/N.  Therefore, in this exercise, the sample mean is close to theoretical population mean, and variance of the sampling distribution of the mean is close to sigma^2/N (=5^2/40=0.625).
+
+```{r}
+# Distribution of a large collection of random exponentials (1000 samples)
+
+sampleDist<-rexp(1000, 0.2)
+hist(sampleDist, main="Distribution of 1000 random exponentials")
+
+```
+
+```{r}
+# Distribution of a large collection (1000 samples) of averages of 40 exponentials
+
+mns=NULL
+for (i in 1:1000) mns=c(mns, mean(rexp(40, 0.2)))
+hist(mns, main="Distribution of 1000 averages of 40 exponentials:
+     Approximately a normal distribution")
+```
+
+Question#3: The distribution of the average of 40 exponentials is approximately normal, because, the graph looks symmetrical centering at mean of 5. 
+
+```{r}
+cfunc <- function(x, n) sqrt(n)*(mean(x)-5)/5  # (x-mu)/(sigma/sqrt(n))
+dat <- data.frame(x = apply(values, 1, cfunc, 40))
+
+g <- ggplot(dat, aes(x = x)) + geom_histogram(alpha = .20, 
+	binwidth=0.3, colour = "black", aes(y = ..density..)) 
+g + stat_function(fun = dnorm, size = 2)+labs(title="Simulation - the Average of 40 Exponentials: rexp(n, lambda)", x="x (n=40, lambda=0.2, 1000 simulations)")+theme(plot.title=element_text(hjust=0.5))
+```
+
+<font size="5">Part 2</font>
+
+```{r}
+#Question#1: load data ToothGrowth"
+
+data("ToothGrowth")
+dim(ToothGrowth)
+str(ToothGrowth)
+unique(ToothGrowth$dose)
+```
+
+Question#2: Summary of data - ToothGrowth dataset has 60 rows (or observations) and 3 columns (or variables).  The variables are len (number variable), supp (factor variable with 2 level: OJ and VC), and dose (number variable with unique value of 0.5, 1.0, and 2.0)
+
+```{r}
+g1<-ToothGrowth$len[1:30]; g2<-ToothGrowth$len[31:60]
+t.test(g1,g2, paired=FALSE)$conf
+```
+Question#3 & 4: Compare tooth growth by supp using t-test above -  At 95% confidence level, the difference in mean between OJ group and VC group is not significant.  The 95% confidence interval includes 0.  
+
+```{r}
+low<-ToothGrowth$len[ToothGrowth$dose==0.5]
+mid<-ToothGrowth$len[ToothGrowth$dose==1]
+high<-ToothGrowth$len[ToothGrowth$dose==2]
+
+t.test(mid,low)$conf; t.test(high, low)$conf; t.test(high, mid)$conf
+```
+Question#3 & 4: Compare toothgrowth by dose using t-test above - The dose has an effect on tooth growth.  The T test of the 3-dosage groups shows that the confidence intervals do not include 0, meaning that the mean tooth growth in each group is statistically different from the other groups at 95% confidence level.  
