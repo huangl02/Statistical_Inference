@@ -1,5 +1,6 @@
 # Statistical_Inference
 Coursera course - Statistical Inference
+
 The project consists of two parts:
 
     A simulation exercise.
